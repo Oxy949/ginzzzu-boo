@@ -289,6 +289,14 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
         return position;
     }
 
+    /** Ensure global instance is cleared when the app is closed. */
+    async close(options = {}) {
+        try { this.stopUserWatcher?.(); } catch (e) { /* ignore */ }
+        const res = await super.close(options);
+        try { if (typeof _appInstance !== 'undefined' && _appInstance === this) _appInstance = null; } catch (e) { /* ignore */ }
+        return res;
+    }
+
     /** Read saved per-user flag and apply window position if present. */
     applySavedPosition() {
         try {
@@ -492,21 +500,26 @@ Hooks.on('renderSceneControls', async (control, html, data) => {
     const icon = 'fas fa-music';
     const active = setting('show-toolbar');
     const btn = $(`<button type="button" class="ginzzzu-boo toggle control ui-control layer icon ${icon} ${game.modules.get("minimal-ui")?.active ? "minimal " : ""}" role="tab" data-control="ginzzzu-boo" title="${title}" data-tool="${name}" aria-pressed="${active ? 'true' : 'false'}" aria-label="Common Controls" aria-controls="scene-controls-tools"></button>`);
-    btn.on('click', async () => {
-      let toggled = !setting("show-toolbar");
-      game.settings.set(MODULE_ID, 'show-toolbar', toggled);
+        btn.on('click', async () => {
+            let toggled = !setting('show-toolbar');
+            await game.settings.set(MODULE_ID, 'show-toolbar', toggled);
 
-      if (!_appInstance) 
-        _appInstance = new GinzzzuBooApp();
+            if (!_appInstance) _appInstance = new GinzzzuBooApp();
+
             if (toggled) {
                 _appInstance.render(true);
                 try { _appInstance.applySavedPosition(); } catch (e) { /* ignore */ }
+            } else {
+                try {
+                    await _appInstance.close();
+                } catch (e) {
+                    try { _appInstance.close(); } catch {};
+                }
+                try { _appInstance = null; } catch {}
             }
-      else 
-        _appInstance.close();
-      
-      $('#scene-controls-layers .ginzzzu-boo', html).attr("aria-pressed", toggled ? "true" : "false");
-    });
+
+            $('#scene-controls-layers .ginzzzu-boo', html).attr("aria-pressed", toggled ? "true" : "false");
+        });
     
     $(html).find('#scene-controls-layers').append($("<li>").append(btn));
   }
@@ -516,7 +529,13 @@ Hooks.on('renderSceneControls', async (control, html, data) => {
 // created/deleted. This ensures the checkbox list in the sender UI reflects
 // current connected/active players.
 const _reRenderApp = foundry.utils.debounce(() => {
-    try { if (_appInstance) _appInstance.render(true); } catch (e) { /* ignore */ }
+    try {
+        // Only re-render if the toolbar is intended to be shown. This
+        // prevents hooks (e.g. position persist) from reopening a closed
+        // toolbar when the module setting is false.
+        if (!setting('show-toolbar')) return;
+        if (_appInstance) _appInstance.render(true);
+    } catch (e) { /* ignore */ }
 }, 250);
 
 Hooks.on('createUser', _reRenderApp);
