@@ -46,12 +46,12 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     static DEFAULT_OPTIONS = {
-        id: "common-display-toolbar",
+        id: "ginnnzu-boo-toolbar",
         tag: "div",
         classes: [],
         window: {
             contentClasses: ["flexrow"],
-            icon: "fa-solid fa-chalkboard-teacher",
+            icon: "fa-solid fa-music",
             resizable: false,
         },
         actions: {
@@ -61,7 +61,7 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
             // toggleFocus: CommonToolbar.toggleFocus,
         },
         position: {
-            height: 95,
+            height: 'auto',
             width: 'auto',
         }
     };
@@ -95,8 +95,8 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
         ].filter(c => !!c).join(" ");
         let pos = this.getPos();
 
-        // let screen = (setting("per-scene") ? foundry.utils.getProperty(canvas.scene, "flags.monks-common-display.screen") : setting("screen")) || "gm";
-        // let focus = (setting("per-scene") ? foundry.utils.getProperty(canvas.scene, "flags.monks-common-display.focus") : setting("focus")) || "gm";
+        // let screen = (setting("per-scene") ? foundry.utils.getProperty(canvas.scene, "flags.monks-ginnnzu-boo.screen") : setting("screen")) || "gm";
+        // let focus = (setting("per-scene") ? foundry.utils.getProperty(canvas.scene, "flags.monks-ginnnzu-boo.focus") : setting("focus")) || "gm";
 
         // Integrate the sender context (folder/files/users) so the
         // `sender.hbs` template has the data it expects.
@@ -264,14 +264,14 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     getPos() {
-        this.pos = game.user.getFlag("monks-common-display", "position");
+        this.pos = game.user.getFlag(MODULE_ID, "position");
 
         if (this.pos == undefined) {
             this.pos = {
                 top: 60,
                 left: 120
             };
-            game.user.setFlag("monks-common-display", "position", this.pos);
+            game.user.setFlag(MODULE_ID, "position", this.pos);
         }
 
         let result = '';
@@ -304,17 +304,17 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
         if (!!MonksCommonDisplay.selectToken) {
             let tokenids = canvas.tokens.controlled.map((t) => t.id).join(",");
             if (setting("per-scene")) {
-                await canvas.scene.setFlag("monks-common-display", MonksCommonDisplay.selectToken, tokenids);
-                foundry.utils.setProperty(canvas.scene, `flags.monks-common-display.${MonksCommonDisplay.selectToken}`, tokenids);
+                await canvas.scene.setFlag(MODULE_ID, MonksCommonDisplay.selectToken, tokenids);
+                foundry.utils.setProperty(canvas.scene, `flags.${MODULE_ID}.${MonksCommonDisplay.selectToken}`, tokenids);
             } else {
-                await game.settings.set("monks-common-display", MonksCommonDisplay.selectToken, tokenids);
+                await game.settings.set(MODULE_ID, MonksCommonDisplay.selectToken, tokenids);
             }
             if (MonksCommonDisplay.selectToken == "screen") MonksCommonDisplay.screenChanged(); else MonksCommonDisplay.focusChanged();
 
             MonksCommonDisplay.selectToken = null;
         } else {
             let active = !setting("screen-toggle");
-            await game.settings.set("monks-common-display", "screen-toggle", active);
+            await game.settings.set(MODULE_ID, "screen-toggle", active);
             if (active) {
                 MonksCommonDisplay.screenChanged();
             }
@@ -324,7 +324,7 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     static async toggleFocus() {
         let active = !setting("focus-toggle");
-        await game.settings.set("monks-common-display", "focus-toggle", active);
+        await game.settings.set(MODULE_ID, "focus-toggle", active);
         MonksCommonDisplay.focusChanged();
         this.render();
     }
@@ -355,9 +355,9 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     let group = btn.closest(".common-button-group").dataset.group;
                     MonksCommonDisplay.selectToken = null;
                     if (setting("per-scene"))
-                        await canvas.scene.setFlag("monks-common-display", group, "gm");
+                        await canvas.scene.setFlag(MODULE_ID, group, "gm");
                     else
-                        await game.settings.set("monks-common-display", group, "gm");
+                        await game.settings.set(MODULE_ID, group, "gm");
                     if (group == "screen") MonksCommonDisplay.screenChanged(); else MonksCommonDisplay.focusChanged();
                     this.render(true);
                 }
@@ -370,9 +370,9 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     let group = btn.closest(".common-button-group").dataset.group;
                     MonksCommonDisplay.selectToken = null;
                     if (setting("per-scene"))
-                        await canvas.scene.setFlag("monks-common-display", group, "controlled");
+                        await canvas.scene.setFlag(MODULE_ID, group, "controlled");
                     else
-                        await game.settings.set("monks-common-display", group, "controlled");
+                        await game.settings.set(MODULE_ID, group, "controlled");
                     if (group == "screen") MonksCommonDisplay.screenChanged(); else MonksCommonDisplay.focusChanged();
                     this.render(true);
                 }
@@ -387,9 +387,9 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     let group = btn.closest(".common-button-group").dataset.group;
                     MonksCommonDisplay.selectToken = null;
                     if (setting("per-scene"))
-                        await canvas.scene.setFlag("monks-common-display", group, "scene");
+                        await canvas.scene.setFlag(MODULE_ID, group, "scene");
                     else
-                        await game.settings.set("monks-common-display", group, "scene");
+                        await game.settings.set(MODULE_ID, group, "scene");
                     if (group == "screen") MonksCommonDisplay.screenChanged(); else MonksCommonDisplay.focusChanged();
                     this.render(true);
                 }
@@ -402,9 +402,9 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     let group = btn.closest(".common-button-group").dataset.group;
                     MonksCommonDisplay.selectToken = null;
                     if (setting("per-scene"))
-                        await canvas.scene.setFlag("monks-common-display", group, "combat");
+                        await canvas.scene.setFlag(MODULE_ID, group, "combat");
                     else
-                        await game.settings.set("monks-common-display", group, "combat");
+                        await game.settings.set(MODULE_ID, group, "combat");
                     if (group == "screen") MonksCommonDisplay.screenChanged(); else MonksCommonDisplay.focusChanged();
                     this.render(true);
                 }
@@ -419,9 +419,9 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     let group = btn.closest(".common-button-group").dataset.group;
                     MonksCommonDisplay.selectToken = null;
                     if (setting("per-scene"))
-                        await canvas.scene.setFlag("monks-common-display", group, "party");
+                        await canvas.scene.setFlag(MODULE_ID, group, "party");
                     else
-                        await game.settings.set("monks-common-display", group, "party");
+                        await game.settings.set(MODULE_ID, group, "party");
                     if (group == "screen") MonksCommonDisplay.screenChanged(); else MonksCommonDisplay.focusChanged();
                     this.render(true);
                 }
@@ -474,12 +474,12 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
 let _appInstance = null;
 
 Hooks.on('renderSceneControls', async (control, html, data) => {
-  if (game.user.isGM && $('#scene-controls-layers .common-display', html).length == 0) {
+  if (game.user.isGM && $('#scene-controls-layers .ginnnzu-boo-display', html).length == 0) {
     const name = 'monkscommondisplay';
     const title = game.i18n.localize("GINZZZUBOO.ToggleToolbar");
     const icon = 'fas fa-music';
     const active = setting('show-toolbar');
-    const btn = $(`<button type="button" class="common-display toggle control ui-control layer icon ${icon} ${game.modules.get("minimal-ui")?.active ? "minimal " : ""}" role="tab" data-control="common-display" title="${title}" data-tool="${name}" aria-pressed="${active ? 'true' : 'false'}" aria-label="Common Controls" aria-controls="scene-controls-tools"></button>`);
+    const btn = $(`<button type="button" class="ginnnzu-boo toggle control ui-control layer icon ${icon} ${game.modules.get("minimal-ui")?.active ? "minimal " : ""}" role="tab" data-control="ginnnzu-boo" title="${title}" data-tool="${name}" aria-pressed="${active ? 'true' : 'false'}" aria-label="Common Controls" aria-controls="scene-controls-tools"></button>`);
     btn.on('click', async () => {
       let toggled = !setting("show-toolbar");
       game.settings.set(MODULE_ID, 'show-toolbar', toggled);
@@ -491,7 +491,7 @@ Hooks.on('renderSceneControls', async (control, html, data) => {
       else 
         _appInstance.close();
       
-      $('#scene-controls-layers .common-display', html).attr("aria-pressed", toggled ? "true" : "false");
+      $('#scene-controls-layers .ginnnzu-boo', html).attr("aria-pressed", toggled ? "true" : "false");
     });
     
     $(html).find('#scene-controls-layers').append($("<li>").append(btn));
