@@ -26,7 +26,7 @@
 .gb-row__left { color: var(--color-text-dark-primary); }
 .gb-row__right { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .gb-row--folder code.gb-folder { padding: 2px 6px; background: var(--color-bg-lighter); border-radius: 6px; }
-.gb-select { width: 100%; }
+.gb-select { width: 100%; min-width: 150px; }
 .gb-users { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.35rem 0.75rem; margin-top: 0.4rem; }
 .gb-user { display: flex; align-items: center; gap: 0.4rem; }
 .gb-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
