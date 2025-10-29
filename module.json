@@ -1,7 +1,7 @@
 {
-  "id": "ginzzzu-portraits",
-  "title": "Ginzzzu's Portraits & NPC Dock",
-  "description": "System-agnostic actor's portraits and NPC dock.",
+  "id": "ginzzzu-boo",
+  "title": "Ginzzzu's Sound Sender",
+  "description": "System-agnostic send player sound",
   "version": "#{VERSION}#",
   "library": "false",
   "manifestPlusVersion": "1.2.0",
@@ -30,12 +30,11 @@
     "requires": []
   },
   "esmodules": [
-    "scripts/entry.js"
+    "scripts/main.js"
   ],
   "scripts": [],
   "styles": [
-    "styles/threeO-portraits.css",
-    "styles/threeO-npc-dock.css"
+    "styles/module.css"
   ],
   "languages": [
     {

@@ -1,0 +1,65 @@
+<div class="gb-container">
+  <div class="gb-section">
+    <div class="gb-row">
+      <div class="gb-row__left">
+        <label><strong>Выбери звук:</strong></label>
+      </div>
+      <div class="gb-row__right">
+        {{#if hasFiles}}
+          <select id="ginzzzu-sound-select" class="gb-select">
+            {{#each files}}
+              <option value="{{this.path}}">{{this.name}}</option>
+            {{/each}}
+          </select>
+        {{else}}
+          <div class="gb-empty">Нет звуков. Выберите папку ниже.</div>
+        {{/if}}
+      </div>
+    </div>
+
+    <div class="gb-row gb-row--folder">
+      <div class="gb-row__left">
+        <strong>Папка:</strong>
+      </div>
+      <div class="gb-row__right">
+        <code class="gb-folder">{{folder}}</code>
+        <button type="button" class="gb-btn" data-action="pick-folder">
+          <i class="fa-solid fa-folder-open"></i> Папка
+        </button>
+        <button type="button" class="gb-btn" data-action="refresh" title="Обновить список">
+          <i class="fa-solid fa-rotate"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="gb-section">
+    <div class="gb-row">
+      <div class="gb-row__left">
+        <strong>Кому отправить:</strong>
+      </div>
+      <div class="gb-row__right">
+        <button type="button" class="gb-btn gb-btn--ghost" data-action="select-all" data-state="off">
+          Выбрать всех
+        </button>
+      </div>
+    </div>
+    <div class="gb-users">
+      {{#each users}}
+        <label class="gb-user">
+          <input type="checkbox" name="user" value="{{this.id}}" />
+          {{this.name}} {{#if this.isGM}}(GM){{/if}}
+        </label>
+      {{/each}}
+      {{#unless users.length}}
+        <div class="gb-empty">Нет активных пользователей.</div>
+      {{/unless}}
+    </div>
+  </div>
+
+  <div class="gb-actions">
+    <button type="button" class="gb-btn gb-btn--primary" data-action="play">
+      <i class="fa-solid fa-play"></i> Запустить
+    </button>
+  </div>
+</div>
