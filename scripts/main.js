@@ -46,7 +46,7 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     static DEFAULT_OPTIONS = {
-        id: "ginnnzu-boo-toolbar",
+        id: "ginzzzu-boo-toolbar",
         tag: "div",
         classes: [],
         window: {
@@ -85,6 +85,9 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // If the sound folder is not set, prompt immediately (behavior from
         // the original sender implementation).
         if (!game.settings.get(MODULE_ID, "soundFolder")) this.pickFolder();
+        // After the first render, apply any saved position so the window
+        // opens where the user left it.
+        try { this.applySavedPosition(); } catch (e) { /* ignore */ }
     }
 
     async _prepareContext(options) {
@@ -95,8 +98,8 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
         ].filter(c => !!c).join(" ");
         let pos = this.getPos();
 
-        // let screen = (setting("per-scene") ? foundry.utils.getProperty(canvas.scene, "flags.monks-ginnnzu-boo.screen") : setting("screen")) || "gm";
-        // let focus = (setting("per-scene") ? foundry.utils.getProperty(canvas.scene, "flags.monks-ginnnzu-boo.focus") : setting("focus")) || "gm";
+        // let screen = (setting("per-scene") ? foundry.utils.getProperty(canvas.scene, "flags.monks-ginzzzu-boo.screen") : setting("screen")) || "gm";
+        // let focus = (setting("per-scene") ? foundry.utils.getProperty(canvas.scene, "flags.monks-ginzzzu-boo.focus") : setting("focus")) || "gm";
 
         // Integrate the sender context (folder/files/users) so the
         // `sender.hbs` template has the data it expects.
@@ -292,6 +295,21 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
         return position;
     }
 
+    /** Read saved per-user flag and apply window position if present. */
+    applySavedPosition() {
+        try {
+            const pos = game.user.getFlag(MODULE_ID, "position");
+            if (!pos) return;
+            const left = Number(pos.left);
+            const top = Number(pos.top);
+            if (Number.isFinite(left) && Number.isFinite(top)) {
+                // Keep current width/height when applying position
+                const cur = this.position || {};
+                this.setPosition({ left, top, width: cur.width, height: cur.height });
+            }
+        } catch (e) { /* ignore */ }
+    }
+
     static clearJournals() {
         MonksCommonDisplay.emit("closeJournals");
     }
@@ -474,24 +492,26 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
 let _appInstance = null;
 
 Hooks.on('renderSceneControls', async (control, html, data) => {
-  if (game.user.isGM && $('#scene-controls-layers .ginnnzu-boo-display', html).length == 0) {
+  if (game.user.isGM && $('#scene-controls-layers .ginzzzu-boo-display', html).length == 0) {
     const name = 'monkscommondisplay';
     const title = game.i18n.localize("GINZZZUBOO.ToggleToolbar");
     const icon = 'fas fa-music';
     const active = setting('show-toolbar');
-    const btn = $(`<button type="button" class="ginnnzu-boo toggle control ui-control layer icon ${icon} ${game.modules.get("minimal-ui")?.active ? "minimal " : ""}" role="tab" data-control="ginnnzu-boo" title="${title}" data-tool="${name}" aria-pressed="${active ? 'true' : 'false'}" aria-label="Common Controls" aria-controls="scene-controls-tools"></button>`);
+    const btn = $(`<button type="button" class="ginzzzu-boo toggle control ui-control layer icon ${icon} ${game.modules.get("minimal-ui")?.active ? "minimal " : ""}" role="tab" data-control="ginzzzu-boo" title="${title}" data-tool="${name}" aria-pressed="${active ? 'true' : 'false'}" aria-label="Common Controls" aria-controls="scene-controls-tools"></button>`);
     btn.on('click', async () => {
       let toggled = !setting("show-toolbar");
       game.settings.set(MODULE_ID, 'show-toolbar', toggled);
 
       if (!_appInstance) 
         _appInstance = new GinzzzuBooApp();
-      if (toggled) 
-        _appInstance.render(true);
+            if (toggled) {
+                _appInstance.render(true);
+                try { _appInstance.applySavedPosition(); } catch (e) { /* ignore */ }
+            }
       else 
         _appInstance.close();
       
-      $('#scene-controls-layers .ginnnzu-boo', html).attr("aria-pressed", toggled ? "true" : "false");
+      $('#scene-controls-layers .ginzzzu-boo', html).attr("aria-pressed", toggled ? "true" : "false");
     });
     
     $(html).find('#scene-controls-layers').append($("<li>").append(btn));
@@ -510,3 +530,15 @@ Hooks.on('updateUser', _reRenderApp);
 Hooks.on('deleteUser', _reRenderApp);
 Hooks.on('userConnected', _reRenderApp);
 Hooks.on('userDisconnected', _reRenderApp);
+
+// If the toolbar was open last time (stored in module setting), create and
+// open the app automatically when Foundry is ready.
+Hooks.once('ready', () => {
+    try {
+        if (game.user.isGM && setting('show-toolbar')) {
+            if (!_appInstance) _appInstance = new GinzzzuBooApp();
+            _appInstance.render(true);
+            try { _appInstance.applySavedPosition(); } catch (e) { /* ignore */ }
+        }
+    } catch (e) { /* ignore */ }
+});
