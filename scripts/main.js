@@ -33,16 +33,6 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.tokens = [];
         this.thumbnails = {};
         this._collapsed = false;
-
-        Hooks.on('canvasReady', () => {
-            if (setting("show-toolbar"))
-                this.render(true);
-        });
-
-        Hooks.on("updateCombat", () => {
-            if (setting("show-toolbar"))
-                this.render(true);
-        });
     }
 
     static DEFAULT_OPTIONS = {
@@ -115,11 +105,15 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
                         return ALLOWED_EXT.some((ext) => lower.endsWith(ext));
                     })
                     .map((f) => {
-                        // Normalize Windows backslashes so startsWith works
-                        const normalized = f.replace(/\\/g, "/");
+                        // Normalize Windows backslashes and extract only the
+                        // filename (basename) for display. Keep `path` as the
+                        // original value so playback still uses the full path.
+                        // const normalized = f.replace(/\\/g, "/");
+                        // const parts = f.split("\\");
+                        const basename = (f.match(/[^\\/]+$/) || [f])[0];
                         return {
                             path: f,
-                            name: normalized.startsWith(folder + "/") ? normalized.slice(folder.length + 1) : normalized
+                            name: basename
                         };
                     });
             } catch (e) {
