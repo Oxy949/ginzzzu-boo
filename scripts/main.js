@@ -82,6 +82,9 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
     async _onFirstRender(context, options) {
         await super._onFirstRender(context, options);
         this._createContextMenus(this.element);
+        // If the sound folder is not set, prompt immediately (behavior from
+        // the original sender implementation).
+        if (!game.settings.get(MODULE_ID, "soundFolder")) this.pickFolder();
     }
 
     async _prepareContext(options) {
@@ -95,23 +98,110 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
         // let screen = (setting("per-scene") ? foundry.utils.getProperty(canvas.scene, "flags.monks-common-display.screen") : setting("screen")) || "gm";
         // let focus = (setting("per-scene") ? foundry.utils.getProperty(canvas.scene, "flags.monks-common-display.focus") : setting("focus")) || "gm";
 
+        // Integrate the sender context (folder/files/users) so the
+        // `sender.hbs` template has the data it expects.
+        const folder = game.settings.get(MODULE_ID, "soundFolder");
+        let files = [];
+        if (folder) {
+            try {
+                const resp = await FilePicker.browse("data", folder);
+                files = (resp.files || [])
+                    .filter((f) => typeof f === "string" && f)
+                    .filter((f) => {
+                        const lower = f.toLowerCase();
+                        return ALLOWED_EXT.some((ext) => lower.endsWith(ext));
+                    })
+                    .map((f) => {
+                        // Normalize Windows backslashes so startsWith works
+                        const normalized = f.replace(/\\/g, "/");
+                        return {
+                            path: f,
+                            name: normalized.startsWith(folder + "/") ? normalized.slice(folder.length + 1) : normalized
+                        };
+                    });
+            } catch (e) {
+                console.error(MODULE_ID, "browse error", e);
+                ui.notifications?.error?.("Не удалось прочитать папку со звуками.");
+            }
+        }
+
+        const users = game.users
+            .filter((u) => u.active)
+            .map((u) => ({ id: u.id, name: u.name, isGM: u.isGM }));
+
         return foundry.utils.mergeObject(context, {
             tokens: this.tokens,
             cssClass: css,
-            screen: {
-                // icon: this.getIcon(screen, "screen"),
-                // img: this.getImage(screen, "screen"),
-                // tooltip: this.getTooltip(screen, "screen"),
-                // active: setting("screen-toggle")
-            },
-            focus: {
-                // icon: this.getIcon(focus, "focus"),
-                // img: this.getImage(focus, "focus"),
-                // tooltip: this.getTooltip(focus, "focus"),
-                // active: setting("focus-toggle")
-            },
+            screen: {},
+            focus: {},
             pos: pos,
+            // Sender-specific
+            folder,
+            files,
+            hasFiles: files.length > 0,
+            users
         });
+    }
+
+    /** Attach event handlers for the sender template controls */
+    async _onRender(...args) {
+        if (super._onRender) await super._onRender(...args);
+        const el = this.element;
+
+        el.querySelector('[data-action="pick-folder"]')
+            ?.addEventListener("click", () => this.pickFolder());
+
+        el.querySelector('[data-action="refresh"]')
+            ?.addEventListener("click", () => this.render(true));
+
+        el.querySelector('[data-action="play"]')
+            ?.addEventListener("click", () => this.play());
+
+        el.querySelector('[data-action="select-all"]')
+            ?.addEventListener("click", (e) => {
+                const btn = e.currentTarget;
+                const turnOn = btn.dataset.state !== "on";
+                btn.dataset.state = turnOn ? "on" : "off";
+                el.querySelectorAll('input[name="user"]').forEach((cb) => (cb.checked = turnOn));
+            });
+    }
+
+    /** Ask the user to pick the folder and persist it */
+    async pickFolder() {
+        new FilePicker({
+            type: "audio",
+            callback: async (path) => {
+                await game.settings.set(MODULE_ID, "soundFolder", path);
+                ui.notifications?.info?.(`📁 Папка со звуками сохранена: ${path}`);
+                this.render(true);
+            }
+        }).browse();
+    }
+
+    /** Play selected sound to selected users */
+    async play() {
+        const el = this.element;
+        const select = el.querySelector("#ginzzzu-sound-select");
+        const soundFile = select?.value ?? "";
+
+        const selectedUsers = Array.from(el.querySelectorAll('input[name="user"]:checked'))
+            .map((cb) => cb.value);
+
+        if (!soundFile) return ui.notifications?.warn?.("❌ Не выбран звук.");
+        if (!selectedUsers.length) return ui.notifications?.warn?.("❌ Никого не выбрано.");
+
+        try {
+            foundry.audio.AudioHelper.play(
+                { src: soundFile, volume: 1, autoplay: true, loop: false, channel: "environment" },
+                { recipients: selectedUsers }
+            );
+
+            const names = selectedUsers.map((uid) => game.users.get(uid)?.name ?? "???").join(", ");
+            ui.notifications?.info?.(`🎶 Отправлен звук → ${names}`);
+        } catch (e) {
+            console.error(MODULE_ID, "play error", e);
+            ui.notifications?.error?.("Ошибка при попытке воспроизведения.");
+        }
     }
 
     getIcon(id, type) {
@@ -375,119 +465,9 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 }
 
-// class GinzzzuBooApp extends foundry.applications.api.ApplicationV2 {
-//   static DEFAULT_OPTIONS = {
-//     ...super.DEFAULT_OPTIONS,
-//     id: "ginzzzu-boo-app",
-//     classes: ["ginzzzu-boo"],
-//     template: `modules/${MODULE_ID}/templates/sender.hbs`,
-//     width: 420,
-//     height: "auto",
-//     resizable: true,
-//     title: "🎵 Отправка звука",
-//     window: { icon: "fa-solid fa-music" }
-//   };
-
-//   /** Данные для шаблона */
-//   async _prepareContext() {
-//     const folder = game.settings.get(MODULE_ID, "soundFolder");
-//     let files = [];
-//     if (folder) {
-//       try {
-//         // Берём содержимое папки через FilePicker и фильтруем по расширениям
-//         const resp = await FilePicker.browse("data", folder);
-//         // resp.files — список путей; превращаем в {path, name}
-//         files = resp.files
-//           .filter((f) => {
-//             const lower = f.toLowerCase();
-//             return ALLOWED_EXT.some((ext) => lower.endsWith(ext));
-//           })
-//           .map((f) => ({
-//             path: f,
-//             name: f.startsWith(folder + "/") ? f.slice(folder.length + 1) : f
-//           }));
-//       } catch (e) {
-//         console.error(MODULE_ID, "browse error", e);
-//         ui.notifications.error("Не удалось прочитать папку со звуками.");
-//       }
-//     }
-
-//     const users = game.users
-//       .filter((u) => u.active)
-//       .map((u) => ({ id: u.id, name: u.name, isGM: u.isGM }));
-
-//     return {
-//       folder,
-//       files,
-//       hasFiles: files.length > 0,
-//       users
-//     };
-//   }
-
-//   /** Первый рендер — если папка не задана, сразу предложим выбрать */
-//   async _onFirstRender() {
-//     if (!game.settings.get(MODULE_ID, "soundFolder")) this.#pickFolder();
-//   }
-
-//   /** Навешиваем обработчики кликов */
-//   async _onRender() {
-//     const el = this.element;
-
-//     el.querySelector('[data-action="pick-folder"]')
-//       ?.addEventListener("click", () => this.#pickFolder());
-
-//     el.querySelector('[data-action="refresh"]')
-//       ?.addEventListener("click", () => this.render(true));
-
-//     el.querySelector('[data-action="play"]')
-//       ?.addEventListener("click", () => this.#play());
-
-//     el.querySelector('[data-action="select-all"]')
-//       ?.addEventListener("click", (e) => {
-//         const btn = e.currentTarget;
-//         const turnOn = btn.dataset.state !== "on";
-//         btn.dataset.state = turnOn ? "on" : "off";
-//         el.querySelectorAll('input[name="user"]').forEach((cb) => (cb.checked = turnOn));
-//       });
-//   }
-
-//   async #pickFolder() {
-//     new FilePicker({
-//       type: "audio",
-//       callback: async (path) => {
-//         await game.settings.set(MODULE_ID, "soundFolder", path);
-//         ui.notifications.info(`📁 Папка со звуками сохранена: ${path}`);
-//         this.render(true);
-//       }
-//     }).browse();
-//   }
-
-//   async #play() {
-//     const el = this.element;
-//     const select = el.querySelector("#ginzzzu-sound-select");
-//     const soundFile = select?.value ?? "";
-
-//     const selectedUsers = Array.from(el.querySelectorAll('input[name="user"]:checked'))
-//       .map((cb) => cb.value);
-
-//     if (!soundFile) return ui.notifications.warn("❌ Не выбран звук.");
-//     if (!selectedUsers.length) return ui.notifications.warn("❌ Никого не выбрано.");
-
-//     try {
-//       // Адресное воспроизведение: channel 'environment', recipients — массив id юзеров
-//       foundry.audio.AudioHelper.play(
-//         { src: soundFile, volume: 1, autoplay: true, loop: false, channel: "environment" },
-//         { recipients: selectedUsers }
-//       );
-
-//       const names = selectedUsers.map((uid) => game.users.get(uid)?.name ?? "???").join(", ");
-//       ui.notifications.info(`🎶 Отправлен звук → ${names}`);
-//     } catch (e) {
-//       console.error(MODULE_ID, "play error", e);
-//       ui.notifications.error("Ошибка при попытке воспроизведения.");
-//     }
-//   }
-// }
+// The original sender implementation (older) was here; it has been
+// integrated above into this Application class. The commented duplicate
+// implementation has been removed for clarity.
 
 /* ----------------------- Кнопка в панели слева ----------------------- */
 // В v13 getSceneControlButtons даёт объект; на всякий случай поддержим и старую форму-массив.
@@ -517,3 +497,16 @@ Hooks.on('renderSceneControls', async (control, html, data) => {
     $(html).find('#scene-controls-layers').append($("<li>").append(btn));
   }
 });
+
+// Keep the app users list up-to-date: re-render when users change or are
+// created/deleted. This ensures the checkbox list in the sender UI reflects
+// current connected/active players.
+const _reRenderApp = foundry.utils.debounce(() => {
+    try { if (_appInstance) _appInstance.render(true); } catch (e) { /* ignore */ }
+}, 250);
+
+Hooks.on('createUser', _reRenderApp);
+Hooks.on('updateUser', _reRenderApp);
+Hooks.on('deleteUser', _reRenderApp);
+Hooks.on('userConnected', _reRenderApp);
+Hooks.on('userDisconnected', _reRenderApp);
