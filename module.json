@@ -1,0 +1,63 @@
+{
+  "id": "ginzzzu-portraits",
+  "title": "Ginzzzu's Portraits & NPC Dock",
+  "description": "System-agnostic actor's portraits and NPC dock.",
+  "version": "#{VERSION}#",
+  "library": "false",
+  "manifestPlusVersion": "1.2.0",
+  "compatibility": {
+    "minimum": 13,
+    "verified": 13
+  },
+  "authors": [ 
+    {
+      "name": "Ginzzzu",
+      "email": "stepangrakov@gmail.com",
+      "url": "https://boosty.to/Ginzzzu",
+      "discord": "ginzzzu",
+      "flags": {}
+    },
+    {
+      "name": "Oxy949",
+      "email": "oxy949@gmail.com",
+      "url": "https://boosty.to/oxy949",
+      "discord": "oxy949",
+      "flags": {}
+    }
+  ],
+  "relationships": {
+    "systems": [],
+    "requires": []
+  },
+  "esmodules": [
+    "scripts/entry.js"
+  ],
+  "scripts": [],
+  "styles": [
+    "styles/threeO-portraits.css",
+    "styles/threeO-npc-dock.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "ru",
+      "name": "Русский",
+      "path": "lang/ru.json"
+    }
+  ],
+  "url": "#{URL}#",
+  "manifest": "#{MANIFEST}#",
+  "download": "#{DOWNLOAD}#",
+  "license": "MIT",
+  "readme": "README.md",
+  "media": [
+    {
+      "type": "icon",
+      "url": "https://avatars2.githubusercontent.com/u/71292812?s=400&u=ccdb4eeb7abf551ca8f314e5a9bfd0479a4d3d41&v=4"
+    }
+  ]
+}
