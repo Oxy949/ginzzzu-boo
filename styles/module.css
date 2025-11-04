@@ -23,7 +23,7 @@
 .gb-container { display: flex; flex-direction: column; gap: 0.75rem; font-size: 13px; }
 .gb-section { border: 1px solid var(--color-border-light-2); border-radius: 8px; padding: 0.6rem; background: transparent; }
 .gb-row { display: grid; grid-template-columns: 1fr 2fr; align-items: center; gap: 0.5rem; }
-.gb-row__left { color: var(--color-text-dark-primary); }
+.gb-row__left { color:antiquewhite }
 .gb-row__right { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .gb-row--folder code.gb-folder { padding: 2px 6px; background: var(--color-bg-lighter); border-radius: 6px; }
 .gb-select { width: 100%; min-width: 150px; }
