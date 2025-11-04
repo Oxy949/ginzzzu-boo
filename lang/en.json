@@ -4,12 +4,20 @@
 
   "GINZZZUBOO": {
     "ToggleToolbar": "Toggle Audio Sender",
+    "SettingSoundFolder": "Sound folder",
+    "SettingShowToolbar": "Show sound toolbar",
 
-    "Settings": {
-      "gmForcePortraitHeight": {
-        "name": "Override player portrait height",
-        "hint": "If enabled, the GM can set a specific height for player portraits."
-      }
-    }
+    "LabelSelectSound": "Select sound",
+    "LabelFolder": "Folder",
+    "LabelRecipients": "Recipients",
+    "ButtonSelectAll": "Select all",
+    "ButtonPlay": "Play",
+
+    "NotifyFolderSaved": "📁 Sound folder saved: {path}",
+    "WarnNoSound": "❌ No sound selected.",
+    "WarnNoRecipients": "❌ No recipients selected.",
+    "NotifySoundSent": "🎶 Sound sent → {names}",
+    "ErrorBrowseFolder": "Failed to read sound folder.",
+    "ErrorPlay": "Error while trying to play the sound."
   }
 }
