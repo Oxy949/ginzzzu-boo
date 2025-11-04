@@ -2,7 +2,7 @@
   <div class="gb-section">
     <div class="gb-row">
       <div class="gb-row__left">
-        <label><strong>Выбери звук:</strong></label>
+        <label><strong>{{localize "GINZZZUBOO.LabelSelectSound"}}</strong></label>
       </div>
       <div class="gb-row__right">
         {{#if hasFiles}}
@@ -12,14 +12,14 @@
             {{/each}}
           </select>
         {{else}}
-          <div class="gb-empty">Нет звуков. Выберите папку ниже.</div>
+          <div class="gb-empty"></div>
         {{/if}}
       </div>
     </div>
 
     <div class="gb-row gb-row--folder">
       <div class="gb-row__left">
-        <strong>Папка:</strong>
+        <strong>{{localize "GINZZZUBOO.LabelFolder"}}:</strong>
       </div>
       <div class="gb-row__right">
         <button type="button" class="gb-btn" data-action="pick-folder" title="Выбрать папку">
@@ -33,11 +33,11 @@
     
     <div class="gb-row">
       <div class="gb-row__left">
-        <strong>Кому отправить:</strong>
+        <strong>{{localize "GINZZZUBOO.LabelRecipients"}}</strong>
       </div>
       <div class="gb-row__right">
         <button type="button" class="gb-btn gb-btn--ghost" data-action="select-all" data-state="off">
-          Выбрать всех
+          {{localize "GINZZZUBOO.ButtonSelectAll"}}
         </button>
       </div>
     </div>
@@ -53,9 +53,11 @@
       {{/unless}}
     </div>
     <div class="gb-actions">
-      <button type="button" class="gb-btn gb-btn--primary" data-action="play">
-        <i class="fa-solid fa-play"></i> Запустить
-      </button>
+      <button type="button"
+        class="play-button"
+        data-action="play">
+  {{localize "GINZZZUBOO.ButtonPlay"}}
+</button>
     </div>
   </div>
 </div>
