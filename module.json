@@ -1,8 +1,8 @@
 {
   "id": "ginzzzu-boo",
-  "title": "Ginzzzu's Sound Sender",
-  "description": "System-agnostic send a sound to selected player(s)",
-  "version": "#{VERSION}#",
+  "title": "Ginzzzu's BOO",
+  "description": "Surprise your players with individual sounds!",
+  "version": "1.0.3",
   "library": "false",
   "manifestPlusVersion": "1.2.0",
   "compatibility": {
@@ -48,9 +48,9 @@
       "path": "lang/ru.json"
     }
   ],
-  "url": "#{URL}#",
-  "manifest": "#{MANIFEST}#",
-  "download": "#{DOWNLOAD}#",
+  "url": "https://github.com/Ginzzzu/ginzzzu-boo",
+  "manifest": "https://github.com/Ginzzzu/ginzzzu-boo/releases/latest/download/module.json",
+  "download": "https://github.com/Ginzzzu/ginzzzu-boo/releases/download/1.0.3/module.zip",
   "license": "MIT",
   "readme": "README.md",
   "media": [
