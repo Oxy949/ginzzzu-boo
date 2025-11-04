@@ -1,7 +1,7 @@
 {
   "id": "ginzzzu-boo",
   "title": "Ginzzzu's Sound Sender",
-  "description": "System-agnostic send player sound",
+  "description": "System-agnostic send a sound to selected player(s)",
   "version": "#{VERSION}#",
   "library": "false",
   "manifestPlusVersion": "1.2.0",
