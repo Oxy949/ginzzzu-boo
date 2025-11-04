@@ -9,20 +9,21 @@ export let setting = key => {
 
 /* ------------------------- Settings ------------------------- */
 Hooks.once("init", () => {
-  game.settings.register(MODULE_ID, "soundFolder", {
-    name: "Папка со звуками",
+    game.settings.register(MODULE_ID, "soundFolder", {
+    name: game.i18n.localize("GINZZZUBOO.SettingSoundFolder"),
     scope: "world",
     config: false,
     type: String,
     default: ""
-  });
-  game.settings.register(MODULE_ID, "show-toolbar", {
-    name: "Показать панель инструментов",
+    });
+
+    game.settings.register(MODULE_ID, "show-toolbar", {
+    name: game.i18n.localize("GINZZZUBOO.SettingShowToolbar"),
     scope: "world",
     config: false,
     type: Boolean,
     default: true
-  });
+    });
 });
 
 /* -------------------- Application (AppV2+HB) -------------------- */
@@ -105,15 +106,20 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
                         return ALLOWED_EXT.some((ext) => lower.endsWith(ext));
                     })
                     .map((f) => {
-                        // Normalize Windows backslashes and extract only the
-                        // filename (basename) for display. Keep `path` as the
-                        // original value so playback still uses the full path.
-                        // const normalized = f.replace(/\\/g, "/");
-                        // const parts = f.split("\\");
-                        const basename = (f.match(/[^\\/]+$/) || [f])[0];
+                        const basenameRaw = (f.match(/[^\\/]+$/) || [f])[0];
+                        let basename = basenameRaw;
+
+                        // 🔤 Декодируем русские буквы (и другие не-ASCII) как в threeO
+                        try {
+                        basename = decodeURIComponent(basenameRaw);
+                        } catch (e) {
+                        // если не удалось декодировать — просто оставим как есть
+                        console.warn("ginzzzu-boo | decodeURIComponent failed for", basenameRaw, e);
+                        }
+
                         return {
-                            path: f,
-                            name: basename
+                        path: f,
+                        name: basename
                         };
                     });
             } catch (e) {
@@ -169,7 +175,7 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
             type: "audio",
             callback: async (path) => {
                 await game.settings.set(MODULE_ID, "soundFolder", path);
-                ui.notifications?.info?.(`📁 Папка со звуками сохранена: ${path}`);
+                ui.notifications?.info?.(game.i18n.format("GINZZZUBOO.NotifyFolderSaved", { path }));
                 this.render(true);
             }
         }).browse();
@@ -184,8 +190,8 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const selectedUsers = Array.from(el.querySelectorAll('input[name="user"]:checked'))
             .map((cb) => cb.value);
 
-        if (!soundFile) return ui.notifications?.warn?.("❌ Не выбран звук.");
-        if (!selectedUsers.length) return ui.notifications?.warn?.("❌ Никого не выбрано.");
+        if (!soundFile) return ui.notifications?.warn?.(game.i18n.localize("GINZZZUBOO.WarnNoSound"));
+        if (!selectedUsers.length) return ui.notifications?.warn?.(game.i18n.localize("GINZZZUBOO.WarnNoRecipients"));
 
         try {
             foundry.audio.AudioHelper.play(
@@ -194,10 +200,10 @@ export class GinzzzuBooApp extends HandlebarsApplicationMixin(ApplicationV2) {
             );
 
             const names = selectedUsers.map((uid) => game.users.get(uid)?.name ?? "???").join(", ");
-            ui.notifications?.info?.(`🎶 Отправлен звук → ${names}`);
+            ui.notifications?.info?.(game.i18n.format("GINZZZUBOO.NotifySoundSent", { names }));
         } catch (e) {
             console.error(MODULE_ID, "play error", e);
-            ui.notifications?.error?.("Ошибка при попытке воспроизведения.");
+            ui.notifications?.error?.(game.i18n.localize("GINZZZUBOO.ErrorBrowseFolder"));
         }
     }
 
