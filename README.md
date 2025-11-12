@@ -1,4 +1,4 @@
-# Ginzzzu's Sound Sender (Module)
+# Ginzzzu's BOO
 A system-independent Foundry VTT module that sends a sound to selected player(s)
 
 ## Installation
